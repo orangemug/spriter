@@ -8,24 +8,47 @@ Includes
 
 
 ## Usage
+We create a definition of images we would like to serve, where the `width`/`height` is the output width/height of the image. Our library will scale the images during packing.
+
+```javascript
+const images = [
+  {
+    id: "red",
+    url: "http://example.com/images/red.png",
+    width: 20,
+    height: 20
+  },
+  {
+    id: "blue",
+    url: "http://example.com/images/blue.jpg",
+    width: 20,
+    height: 20
+  },
+];
+```
+
+With the above definition we can either create server with the express middleware.
 
 ```javascript
 const spriter = require("spriter");
+
+function fakeApi (req) {
+  const {namespace} = req.params;
+  const fakeDatabase = {
+    "acme": images,
+  }
+  return fakeDatabase[namespace];
+}
 
 app.use('/:namespace/sprite*', spriter.middleware(fakeApi, {
   concurrency: 10 /* default value */
 }));
 ```
 
+Or just run the process via the API
 Via the API
 
 ```javascript
-const images = [
-  {id: "red", url: "http://example.com/images/red.png", width: 20, height: 20},
-  // We can read from a buffer also...
-  {id: "blue", buffer: fs.readFileSync("demo.png"), width: 20, height: 20},
-  {id: "blue", url: "http://example.com/images/blue.jpg", width: 20, height: 20},
-];
 const {buffer, json} = spriter.convert(images);
 ```
 

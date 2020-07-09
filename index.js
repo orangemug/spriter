@@ -21,15 +21,15 @@ function json (imgs, {pixelRatio}) {
   results.forEach(item => {
     out[item.id] = {
       "pixelRatio": pixelRatio,
-      "width": item.w,
-      "height": item.h,
-      "x": item.x,
-      "y": item.y,
+      "width": item.w*pixelRatio,
+      "height": item.h*pixelRatio,
+      "x": item.x*pixelRatio,
+      "y": item.y*pixelRatio,
     };
   })
   return {
-    width: sprite.w,
-    height: sprite.h,
+    width: sprite.w*pixelRatio,
+    height: sprite.h*pixelRatio,
     images: imgs,
     boxes: out,
     pixelRatio,
@@ -73,6 +73,10 @@ async function png (spriteJson) {
 }
 
 async function fetchImage (imgDef) {
+  const resizeOpts = {
+    // TODO: Make this configurable.
+    scaling_method: mapnik.imageScaling.near
+  };
   try {
     const resp = await fetch(imgDef.url);
     const {status} = resp;
@@ -94,9 +98,14 @@ async function fetchImage (imgDef) {
           if (err) {
             reject(err);
           }
-          else {
-            resolve(image);
-          }
+          image.resize(imgDef.width, imgDef.height, resizeOpts, (err, data) => {
+            if (err) {
+              reject(err);
+            }
+            else {
+              resolve(data)
+            }
+          })
         });
       }));
 
@@ -106,7 +115,23 @@ async function fetchImage (imgDef) {
       };
     }
     else {
-      const buffer = await resp.buffer();
+      const inBuffer = await resp.buffer();
+
+      const buffer = await (new Promise((resolve, reject) => {
+        mapnik.Image.fromBytes(inBuffer, (err, image) => {
+          if (err) {
+            reject(err);
+          }
+          image.resize(imgDef.width, imgDef.height, resizeOpts, (err, data) => {
+            if (err) {
+              reject(err);
+            }
+            else {
+              resolve(data)
+            }
+          })
+        })
+      }))
       return {
         ...imgDef,
         buffer,

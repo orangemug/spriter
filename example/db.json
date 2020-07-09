@@ -1,0 +1,11 @@
+{
+  "acme": [
+    {"id": "red", "url": "/images/red.jpg", "width": 20, "height": 20},
+    {"id": "green", "url": "images/green.svg", "width": 30, "height": 30},
+    {"id": "blue", "url": "/images/blue.png", "width": 20, "height": 20}
+  ],
+  "facefriend": [
+    {"id": "red", "url": "/images/red.jpg", "width": 20, "height": 20},
+    {"id": "blue", "url": "/images/blue.png", "width": 20, "height": 20}
+  ]
+}

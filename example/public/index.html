@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Display a map</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css" rel="stylesheet" />
+<style>
+	body { margin: 0; padding: 0; }
+	#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: {
+    version: 8,
+    sprite: "http://localhost:3003/acme/sprite",
+    glyphs: "http://localhost:3003/glyphs/{fontstack}/{range}",
+    sources: {
+      "s1": {
+        type: "geojson",
+        data: {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-45, 0],
+          }, 
+        }
+      },
+      "s2": {
+        type: "geojson",
+        data: {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [0, 0],
+          }, 
+        }
+      },
+      "s3": {
+        type: "geojson",
+        data: {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [45, 0],
+          }, 
+        }
+      },
+    },
+    layers: [
+      {
+        id: "background",
+        type: "background",
+        paint: {
+          "background-color": "#000"
+        }
+      },
+      {
+        id: "red",
+        type: "symbol",
+        source: "s1",
+        layout: {
+          "icon-image": "red",
+        }
+      },
+      {
+        id: "green",
+        type: "symbol",
+        source: "s2",
+        layout: {
+          "icon-image": "green",
+        }
+      },
+      {
+        id: "blue",
+        type: "symbol",
+        source: "s3",
+        layout: {
+          "icon-image": "blue",
+        }
+      },
+    ]
+  }
+});
+</script>
+ 
+</body>
+</html>

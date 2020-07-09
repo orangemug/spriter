@@ -1,0 +1,19 @@
+{
+  "name": "spriter",
+  "version": "0.0.0",
+  "scripts": {
+    "example": "node example/index.js",
+    "test": "echo 'TODO'"
+  },
+  "dependencies": {
+    "@mapbox/shelf-pack": "^3.2.0",
+    "etag": "^1.8.1",
+    "fresh": "^0.5.2",
+    "mapnik": "^4.4.0",
+    "node-fetch": "^2.6.0",
+    "p-limit": "^3.0.1"
+  },
+  "devDependencies": {
+    "express": "^4.17.1"
+  }
+}

@@ -78,6 +78,7 @@ Which will expose the following URLS
 
 ```
 http://localhost:8080/{namespace}/sprite@{pixel_ratio}x.png
+http://localhost:8080/{namespace}/sprite@{pixel_ratio}x.json
 ```
 
 So if you clone this repo and run

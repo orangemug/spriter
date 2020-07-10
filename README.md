@@ -32,11 +32,12 @@ With the above definition we can either create server with the express middlewar
 ```javascript
 const spriter = require("spriter");
 
+const fakeDatabase = {
+  "acme": images,
+};
+
 function fakeApi (req) {
   const {namespace} = req.params;
-  const fakeDatabase = {
-    "acme": images,
-  }
   return fakeDatabase[namespace];
 }
 

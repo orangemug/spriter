@@ -2,12 +2,14 @@
   "name": "spriter",
   "version": "0.0.0",
   "main": "index.js",
+  "bin": "./bin/cli.js",
   "scripts": {
     "example": "node example/index.js",
     "test": "echo 'TODO'"
   },
   "dependencies": {
     "@mapbox/shelf-pack": "^3.2.0",
+    "cors": "^2.8.5",
     "etag": "^1.8.1",
     "fresh": "^0.5.2",
     "minimist": "^1.2.5",
@@ -16,6 +18,9 @@
     "sharp": "^0.25.4"
   },
   "peerDependencies": {
+    "express": "*"
+  },
+  "devDependencies": {
     "express": "*"
   }
 }

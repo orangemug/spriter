@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const express = require("express");
+const cors = require("cors");
 const spriter = require("../");
 const app = express();
 const path = require("path");
@@ -72,6 +73,8 @@ else if (dbPath) {
     return out;
   }
 }
+
+app.use(cors());
 
 if (staticDir) {
   app.use("/images", express.static(process.cwd()+"/"+staticDir));

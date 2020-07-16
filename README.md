@@ -1,4 +1,6 @@
 # spriter
+**NOTE: This is a work in progress**
+
 A really simple library for sprite generation.
 
 Includes 
@@ -71,7 +73,7 @@ You can also run a CLI with
 
 ```
 spriter --port 8080 --api "http://localhost:3006/{namespace}/images"
-spriter --db cli/sample/db.js --static ./example/public/images/
+spriter --db ./bin/sample/db.js --static ./example/public/images/
 ```
 
 Which will expose the following URLS
@@ -84,7 +86,7 @@ http://localhost:8080/{namespace}/sprite@{pixel_ratio}x.json
 So if you clone this repo and run
 
 ```
-./bin/cli.js --db cli/sample/db.js --static ./example/public/images/
+./bin/cli.js --db ./bin/sample/db.js --static ./example/public/images/
 ```
 
 You can access the following URLs
@@ -96,7 +98,7 @@ You can access the following URLs
  - <http://localhost:8080/facefriend/sprite@2x.json>
  - <http://localhost:8080/facefriend/sprite@2x.json>
 
-As defined by [./cli/sample/db.js](./cli/sample/db.js).
+As defined by [./bin/sample/db.js](./bin/sample/db.js).
 
 
 

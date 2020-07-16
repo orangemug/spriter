@@ -63,7 +63,27 @@ else if (dbPath) {
   const db = require(dbPath);
   apiResolver = (req) => {
     const baseUrl = req.protocol+"://"+(req.headers["x-forwarded-host"] || req.headers.host);
-    const images = db.get(req.params.namespace);
+    let images;
+    if (dbPath.endsWith(".json")) {
+      images = db[req.params.namespace];
+      if (images) {
+        images = images.map(image => {
+          if (!image.url.startsWith("http:")) {
+            return {
+              ...image,
+              url: `http://localhost:${port}/images/${image.url}`,
+            }
+          }
+          else {
+            return image;
+          }
+        })
+      }
+    }
+    else {
+      images = db.get(req.params.namespace);
+    }
+
     const out =  images.map(img => {
       return {
         ...img,

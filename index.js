@@ -112,6 +112,7 @@ async function fetchImage (imgDef) {
 
       const image = sharp(inBuffer);
       const metadata = await image.metadata();
+      let density = metadata.density;
       if (imgDef.width && metadata.width && imgDef.width > metadata.width) {
         // We must limit to 2400
         // <https://github.com/lovell/sharp/issues/1421#issuecomment-514446234>

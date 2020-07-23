@@ -105,13 +105,13 @@ As defined by [./bin/sample/db.js](./bin/sample/db.js).
 ## Development
 Clone the repo and run
 
-```
+```bash
 npm install
 ```
 
 Start the example server with
 
-```
+```bash
 npm run example
 ```
 
@@ -123,6 +123,14 @@ Where you have access to the following URLs
 
 Note `@2x` can be replaced with any pixel ratio, for example `@1x`/`@3x`.
 
+## Test
+To test run
+
+```bash
+npm test
+```
+
+You can view code coverage results in your working directory at `./coverage/index.html`
 
 
 ## License

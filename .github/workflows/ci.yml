@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+
+jobs:
+  test:
+    name: "build/node@${{ matrix.node-version }} (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [10.x, 12.x, 14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - uses: actions/cache@v1
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    - run: npm install
+    - run: npm test
+    - name: artifacts/coverage
+      uses: actions/upload-artifact@v1
+      with:
+        name: coverage
+        path: coverage

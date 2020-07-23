@@ -191,7 +191,7 @@ function middleware (resolver, opts={}) {
         return;
       }
 
-      const urlMatches = req.baseUrl.match(/(?:@([0-9]+)x)?\.(png|json)$/);
+      const urlMatches = req.originalUrl.match(/(?:@([0-9]+)x)?\.(png|json)$/);
       if (!urlMatches) {
         throw new Error("Expected URL to have suffix of format /(@[0.9]+x)?\.(png|json)/")
       }

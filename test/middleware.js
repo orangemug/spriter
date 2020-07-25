@@ -275,14 +275,22 @@ describe("middleware", () => {
       return [];
     })
 
-    const res = await fetch(testServer.url("sprite_foobar"));
-    assert.equal(res.status, 500);
+    const requestUrls = [
+      testServer.url("sprite_foobar"),
+      testServer.url("sprite.json"),
+      testServer.url("sprite.png"),
+    ];
 
-    // The format will be from your own error handler.
-    // See `./test/helper.js` appServer function
-    assert.deepStrictEqual(await res.json(), {
-      type: "error",
-      data: "Error: Expected URL to have suffix of format /(@[0.9]+x)?.(png|json)/"
-    });
+    for (let url of requestUrls) {
+      const response = await fetch(url);
+      assert.equal(response.status, 500);
+
+      // The format will be from your own error handler.
+      // See `./test/helper.js` appServer function
+      assert.deepStrictEqual(await response.json(), {
+        type: "error",
+        data: "Error: Expected URL to have suffix of format /(@[0.9]+x)?.(png|json)/"
+      });
+    }
   });
 });

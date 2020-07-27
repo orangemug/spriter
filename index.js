@@ -209,7 +209,7 @@ function middleware (resolver, opts={}) {
       }
 
       const debugging = qsToggle(req.query, "debug");
-      const pixelRatio = parseInt(urlMatches[1], 10);
+      const pixelRatio = parseInt(urlMatches[1], 10) || 1;
       const format = urlMatches[2];
 
       const spriteJson = json(imgs, {pixelRatio});

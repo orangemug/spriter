@@ -57,7 +57,50 @@ async function png (spriteJson, opts={}) {
     };
   }
 
+  function blankCanvas () {
+    return sharp({
+      create: {
+        width,
+        height,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 }
+      }
+    });
+  }
+
+  const cache = {
+    outputImage: await blankCanvas().png().toBuffer(),
+    workingPromise: null
+  };
+
+  // Basically a really ugly serialized function. So we can add the image to
+  // the output buffer as we go
+  const composite = async (imageObj) => {
+    // Wait for other promises to succeed.
+    while (cache.workingPromise) {
+      await cache.workingPromise;
+    }
+
+    cache.workingPromise = blankCanvas()
+    .composite([
+      {
+        input: cache.outputImage,
+        top: 0,
+        left: 0,
+      },
+      {
+        input: imageObj.input,
+        top: imageObj.y,
+        left: imageObj.x,
+      }
+    ]).png().toBuffer();
+
+    cache.outputImage = await cache.workingPromise;
+    cache.workingPromise = null;
+  };
+
   const imgs = await fetchImages(
+    composite,
     images.map(insertImageUrl),
     opts,
   );
@@ -68,44 +111,38 @@ async function png (spriteJson, opts={}) {
     return EMPTY_PNG;
   }
 
-  const buffer = await sharp({
-    create: {
-      width,
-      height,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 }
-    }
-  })
-  .composite(imgs.map(img => {
-    return {
-      left: img.x,
-      top: img.y,
-      input: img.buffer,
-    };
-  }))
-  .png()
-  .toBuffer()
-
   return {
     missingImages,
-    buffer,
+    buffer: cache.outputImage,
   };
 }
 
-async function fetchImage (imgDef) {
+async function fetchImage (composite, imgDef) {
   try {
     const resp = await fetch(imgDef.url);
     const {status} = resp;
     if (status < 200 || status >= 300) {
       debug("Not found: '%s'", imgDef.url);
+
+      await composite({
+        ...imgDef,
+        width: 1,
+        height: 1,
+        input: EMPTY_PNG,
+      })
       return {
         ...imgDef,
         missing: true,
-        buffer: EMPTY_PNG,
       }
     }
     if (imgDef.buffer) {
-      return imgDef;
+      await composite({
+        ...imgDef,
+        input: imgDef.buffer
+      });
+      const out = {...imgDef};
+      delete out["buffer"];
+      return out;
     }
     else if (imgDef.url.match(/\.svg$/i)) {
       const inBuffer = await resp.buffer();
@@ -127,9 +164,13 @@ async function fetchImage (imgDef) {
       .png()
       .toBuffer();
 
+      await composite({
+        ...imgDef,
+        input: buffer,
+      });
+
       return {
         ...imgDef,
-        buffer,
       };
     }
     else {
@@ -140,23 +181,32 @@ async function fetchImage (imgDef) {
         .png()
         .toBuffer();
 
+      await composite({
+        ...imgDef,
+        input: buffer,
+      })
+
       return {
         ...imgDef,
-        buffer,
       };
     }
   }
   catch (_err) {
     console.warn(_err);
+    await composite({
+      ...imgDef,
+      width: 1,
+      height: 1,
+      input: EMPTY_PNG,
+    });
     return {
       ...imgDef,
       missing: true,
-      buffer: EMPTY_PNG,
     };
   }
 }
 
-async function fetchImages (imgs, opts={}) {
+async function fetchImages (composite, imgs, opts={}) {
   opts = {
     ...opts,
     concurrency: 10
@@ -165,7 +215,7 @@ async function fetchImages (imgs, opts={}) {
 
   const promises = imgs.map(img => {
     return limit(async() => {
-      const out = await fetchImage(img)
+      const out = await fetchImage(composite, img);
       return out;
     });
   });

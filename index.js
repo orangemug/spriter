@@ -48,6 +48,11 @@ function json (imgs, opts={}) {
 
 async function png (spriteJson, opts={}) {
   const {pixelRatio, boxes, images, width, height} = spriteJson;
+  const {imageConcurrency} = {
+    pngCompression: 7,
+    imageConcurrency: 100,
+    ...opts,
+  };
 
   function insertImageUrl (def) {
     const img = boxes[def.id];
@@ -69,34 +74,42 @@ async function png (spriteJson, opts={}) {
   }
 
   const cache = {
-    outputImage: await blankCanvas().png().toBuffer(),
+    outputImage: await blankCanvas().png({compressionLevel: 0}).toBuffer(),
     workingPromise: null
   };
 
+  const queue = [];
+
   // Basically a really ugly serialized function. So we can add the image to
   // the output buffer as we go
-  const composite = async (imageObj) => {
+  const composite = async (imageObj, flush=false) => {
     // Wait for other promises to succeed.
     while (cache.workingPromise) {
       await cache.workingPromise;
     }
 
-    cache.workingPromise = blankCanvas()
-    .composite([
-      {
-        input: cache.outputImage,
-        top: 0,
-        left: 0,
-      },
-      {
+    if (imageObj) {
+      queue.push({
         input: imageObj.input,
         top: imageObj.y,
         left: imageObj.x,
-      }
-    ]).png().toBuffer();
+      });
+    }
 
-    cache.outputImage = await cache.workingPromise;
-    cache.workingPromise = null;
+    if (flush || queue.length >= imageConcurrency) {
+      cache.workingPromise = blankCanvas().composite([
+        {
+          input: cache.outputImage,
+          top: 0,
+          left: 0,
+        },
+        ...queue,
+      ]).png({compressionLevel: flush ? opts.pngCompression : 0}).toBuffer();
+
+      cache.outputImage = await cache.workingPromise;
+      queue.splice(0);
+      cache.workingPromise = null;
+    }
   };
 
   const imgs = await fetchImages(
@@ -104,6 +117,9 @@ async function png (spriteJson, opts={}) {
     images.map(insertImageUrl),
     opts,
   );
+
+  // Flush...
+  await composite(null, true);
 
   const missingImages = imgs.filter(img => img.missing).map(img => img.id);
 
@@ -119,7 +135,7 @@ async function png (spriteJson, opts={}) {
 
 async function fetchImage (composite, imgDef) {
   try {
-    const resp = await fetch(imgDef.url);
+    const resp = await imgDef.resp;
     const {status} = resp;
     if (status < 200 || status >= 300) {
       debug("Not found: '%s'", imgDef.url);
@@ -161,7 +177,7 @@ async function fetchImage (composite, imgDef) {
 
       const buffer = await sharp(inBuffer, {density})
       .resize(imgDef.width, imgDef.height)
-      .png()
+      .png({compressionLevel: 0})
       .toBuffer();
 
       await composite({
@@ -178,7 +194,7 @@ async function fetchImage (composite, imgDef) {
 
       const buffer = await sharp(inBuffer)
         .resize(imgDef.width, imgDef.height)
-        .png()
+        .png({compressionLevel: 0})
         .toBuffer();
 
       await composite({
@@ -208,20 +224,24 @@ async function fetchImage (composite, imgDef) {
 
 async function fetchImages (composite, imgs, opts={}) {
   opts = {
+    processConcurrency: 100,
+    concurrency: 100,
     ...opts,
-    concurrency: 10
   };
-  const limit = pLimit(opts.concurrency);
+  const requestLimit = pLimit(opts.concurrency);
+  const processLimit = pLimit(opts.processConcurrency);
+
+  await Promise.all(imgs.map(img => {
+    return requestLimit(() => {
+      img.resp = fetch(img.url)
+    });
+  }));
 
   const promises = imgs.map(img => {
-    return limit(async() => {
-      const out = await fetchImage(composite, img);
-      return out;
-    });
+    return processLimit(() => fetchImage(composite, img))
   });
 
-  const out = await Promise.all(promises);
-  return out;
+  return Promise.all(promises);
 }
 
 async function convert(imgs) {
@@ -239,7 +259,8 @@ function middleware (resolver, opts={}) {
       concurrency,
       missingImageRetryInterval,
     } = {
-      concurrency: 10,
+      concurrency: 100,
+      processConcurrency: 100,
       missingImageRetryInterval: 60,
       ...opts
     };
@@ -281,7 +302,12 @@ function middleware (resolver, opts={}) {
         return;
       }
       else if (format === "png") {
+        const start = Date.now();
         const {buffer, missingImages} = await png(spriteJson, opts);
+        const numberOfImages = spriteJson.images.length;
+        const took = Date.now() - start;
+        const perImageTook = (took/numberOfImages).toFixed(4);
+        debug(`png generation took: ${took}ms, ${numberOfImages} images, ${perImageTook}ms per image`);
         if (missingImages.length > 0) {
           const etag = genEtag(buffer);
           res.setHeader("etag", etag);

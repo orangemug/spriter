@@ -103,6 +103,31 @@ describe("png", () => {
       buffer.equals(resultBuffer)
     );
   });
+
+  it("rounded dimensions", async () => {
+    const imgs = [
+      {
+        "id": "foo",
+        "url": `http://localhost:${port}/red.svg`,
+        "width": 30.4,
+        "height": 80.4,
+      },
+      {
+        "id": "bar",
+        "url": `http://localhost:${port}/blue.png`,
+        "width": 49.9,
+        "height": 39.9,
+      },
+    ];
+
+    const json = spriter.json(imgs);
+    const {buffer, missingImages} = await spriter.png(json);
+    assert.deepStrictEqual(missingImages, []);
+    const resultBuffer = await fs.promises.readFile(__dirname+"/results/no_pixel_ratio.png");
+    assert(
+      buffer.equals(resultBuffer)
+    );
+  });
 });
 
 

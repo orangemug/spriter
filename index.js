@@ -25,7 +25,15 @@ function json (imgs, opts={}) {
   };
   const {pixelRatio} = opts;
   const sprite = new ShelfPack(1, 1, { autoResize: true });
-  const results = sprite.pack(imgs, { inPlace: true });
+
+  const clampedSizedImages = imgs.map(img => {
+    return {
+      ...img,
+      width: Math.round(img.width),
+      height: Math.round(img.height),
+    }
+  })
+  const results = sprite.pack(clampedSizedImages, { inPlace: true });
 
   const out = {};
   results.forEach(item => {
@@ -40,7 +48,7 @@ function json (imgs, opts={}) {
   return {
     width: sprite.w*pixelRatio,
     height: sprite.h*pixelRatio,
-    images: imgs,
+    images: clampedSizedImages,
     boxes: out,
     pixelRatio,
   };

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const express = require("express");
 const cors = require("cors");
+const sharp = require("sharp");
 const spriter = require("../");
 const app = express();
 const path = require("path");
@@ -16,6 +17,7 @@ Options, specify either 'api' or 'db' (not both)
   --db        A module that provides a 'get' method
   --static    Directory to start as a static file server
   --port      HTTP server port
+  --no-cache  Disables the sharp image cache
 
 Examples
 
@@ -32,6 +34,10 @@ const staticDir = argv.static;
 let dbPath;
 const apiUrl = argv.api;
 const port = argv.port || process.env.PORT || 8080;
+
+if (argv["cache"] === false) {
+  sharp.cache(false);
+}
 
 if (argv.db) {
   dbPath = process.cwd()+"/"+argv.db

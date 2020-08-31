@@ -133,6 +133,29 @@ npm test
 You can view code coverage results in your working directory at `./coverage/index.html`
 
 
+## Memory optimization
+This library uses [sharp](https://sharp.pixelplumbing.com/) under the hood. Using the standard memory allocator on a number of systems appears to use lots of memory, and sometimes doesn't release it. As described in <https://github.com/lovell/sharp/issues/955>, this can be resolved by using the `jemalloc` memory allocator, as described in that issue.
+
+If you're on a Debian based system
+
+```
+apt-get update
+apt-get install libjemalloc1
+```
+
+Then run the node process using the `jemalloc` memory allocator.
+
+```
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.1 npm run example
+```
+
+If you are still seeing issues you can also disable the sharp cache globally (see https://sharp.pixelplumbing.com/api-utility#cache). If you can using the spriter CLI you can disable that with `--no-cache` option, for example
+
+```
+spriter --no-cache --db ./bin/sample/db.js --static ./example/public/images/
+```
+
+
 ## License
 MIT
 

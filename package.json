@@ -16,7 +16,7 @@
     "express": "^4.17.1",
     "fresh": "^0.5.2",
     "minimist": "^1.2.5",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "p-limit": "^3.0.2",
     "sharp": "^0.26.0"
   },

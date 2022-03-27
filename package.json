@@ -15,7 +15,7 @@
     "etag": "^1.8.1",
     "express": "^4.17.1",
     "fresh": "^0.5.2",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.6",
     "node-fetch": "^2.6.1",
     "p-limit": "^3.0.2",
     "sharp": "^0.26.0"
